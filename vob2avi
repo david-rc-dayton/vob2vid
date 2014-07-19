@@ -1,0 +1,45 @@
+#!/bin/sh
+
+################################################################################
+# vob2avi - convert all VOB files in directory to AVI                          #
+# v0.1.6                                                                       #
+# David RC Dayton <2014>                                                       #
+################################################################################
+#                                              NOTE: requires mplayer/mencoder #
+################################################################################
+
+WIDTH="640"
+HEIGHT="360"
+VBITRATE="1000"
+ABITRATE="128"
+FPS="24000/1001"
+SAMPLE="44100"
+SS="60"
+ENDPOS="1800"
+
+for FILE in *.vob
+do
+    BASE=$(echo ${FILE} | awk -F '.' '{print $1}')
+    INPUT=${BASE}.vob
+    OUTPUT=${BASE}.avi
+    echo Processing ${INPUT}:
+
+    echo Detecting crop parameters....
+    CROP=$(mplayer ${INPUT} -benchmark -nosound -vf cropdetect=63:0 -vo null \
+        -ao null -ss ${SS} -endpos ${ENDPOS} 2>&1 \
+        | awk -F '[(=)]' '/crop=/ {print $3}' \
+        | tail -1)
+      
+    echo Encoding ${INPUT} to ${OUTPUT}:
+    for PASS in 1 2
+    do
+        mencoder ${INPUT} -ovc xvid -xvidencopts \
+        pass=${PASS}:bitrate=${VBITRATE}:autoaspect:chroma_opt:vhq=4:bvhq=1:quant_type=mpeg \
+        -vf pp=lb,crop=${CROP},scale=${WIDTH}:${HEIGHT},harddup -nosub \
+        -oac mp3lame -lameopts br=${ABITRATE}:cbr:aq=0:padding=2 \
+        -aid 128 -af volnorm=2:0.75,resample=${SAMPLE}:0:2 -srate ${SAMPLE} \
+        -ofps ${FPS} -sws 9 -o ${OUTPUT} "$@"
+    done
+
+    rm divx2pass.log*
+done
