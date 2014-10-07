@@ -8,9 +8,9 @@
 #                                              NOTE: requires mplayer/mencoder #
 ################################################################################
 
-WIDTH="640"
-HEIGHT="360"
-VBITRATE="1000"
+WIDTH="854"
+HEIGHT="480"
+VBITRATE="2500"
 ABITRATE="128"
 FPS="24000/1001"
 SAMPLE="44100"
