@@ -5,12 +5,12 @@
 # v0.1.6                                                                       #
 # David RC Dayton <2014>                                                       #
 ################################################################################
-#                                              NOTE: requires mplayer/mencoder #
+#                NOTE: requires mplayer/mencoder/ffmpeg/normalize-audio/mpg321 #
 ################################################################################
 
-WIDTH="854"
+WIDTH="720"
 HEIGHT="480"
-VBITRATE="2500"
+VBITRATE="800"
 ABITRATE="128"
 FPS="24000/1001"
 SAMPLE="44100"
@@ -37,9 +37,18 @@ do
         pass=${PASS}:bitrate=${VBITRATE}:autoaspect:chroma_opt:vhq=4:bvhq=1:quant_type=mpeg \
         -vf pp=lb,crop=${CROP},scale=${WIDTH}:${HEIGHT},harddup -nosub \
         -oac mp3lame -lameopts br=${ABITRATE}:cbr:aq=0:padding=2 \
-        -aid 128 -af volnorm=2:0.75,resample=${SAMPLE}:0:2 -srate ${SAMPLE} \
-        -ofps ${FPS} -sws 9 -o ${OUTPUT} "$@"
+        -aid 128 -af resample=${SAMPLE}:0:2 -srate ${SAMPLE} \
+        -ofps ${FPS} -sws 9 -o output.avi "$@"
     done
 
-    rm divx2pass.log*
+    mplayer output.avi -dumpaudio
+    mv stream.dump audio.mp3
+    mplayer output.avi -dumpvideo
+    mv stream.dump video.xvid
+
+    normalize-mp3 audio.mp3
+
+    ffmpeg -i audio.mp3 -i video.xvid -codec copy ${OUTPUT}
+
+    rm output.avi audio.mp3 video.xvid divx2pass.log
 done

@@ -1,11 +1,11 @@
 #!/bin/sh
 
 ################################################################################
-# vob2mp4 - convert all VOB files in directory to MP4                          #
-# v0.1.5                                                                       #
+# vob2avi - convert all VOB files in directory to MKV                          #
+# v0.1.7                                                                       #
 # David RC Dayton <2014>                                                       #
 ################################################################################
-#               NOTE: requires mplayer (compiled with aac), mencoder, and gpac #
+#            NOTE: requires mplayer/mencoder/mkvtoolnix/normalize-audio/mpg321 #
 ################################################################################
 
 WIDTH="720"
@@ -21,8 +21,7 @@ for FILE in *.vob
 do
     BASE=$(echo ${FILE} | awk -F '.' '{print $1}')
     INPUT=${BASE}.vob
-    OUTPUT=${BASE}.avi
-    BOXED=${BASE}.mp4
+    OUTPUT=${BASE}.mkv
     echo Processing ${INPUT}:
 
     echo Detecting crop parameters....
@@ -37,17 +36,17 @@ do
         mencoder ${INPUT} -ovc x264 -x264encopts \
         pass=${PASS}:bitrate=${VBITRATE}:subq=6:partitions=all:8x8dct:me=umh:frameref=5:bframes=3:b_pyramid=normal:weight_b \
         -vf pp=lb,crop=${CROP},scale=${WIDTH}:${HEIGHT},harddup -nosub \
-        -oac faac -faacopts br=${ABITRATE}:object=2:tns \
-        -aid 128 -af volnorm,resample=${SAMPLE}:0:2 -srate ${SAMPLE} \
-        -ofps ${FPS} -sws 9 -o ${OUTPUT} "$@"
+        -oac mp3lame -lameopts br=${ABITRATE}:cbr:aq=0:padding=2 \
+        -aid 128 -af resample=${SAMPLE}:0:2 -srate ${SAMPLE} \
+        -ofps ${FPS} -sws 9 -o output.avi "$@"
     done
 
-    MP4Box -aviraw video ${OUTPUT}
-    MP4Box -aviraw audio ${OUTPUT}
-    mv ${BASE}_audio.raw ${BASE}_audio.aac
-    MP4Box -add ${BASE}_video.h264 -add ${BASE}_audio.aac -isma ${BOXED}
-      
-    rm divx2pass.log*
-    rm ${OUTPUT}
-    rm ${BASE}_video.h264 ${BASE}_audio.aac
+    mplayer output.avi -dumpaudio
+    mv stream.dump audio.mp3
+
+    normalize-mp3 audio.mp3
+    
+    mkvmerge -o ${OUTPUT} -A output.avi audio.mp3
+
+    rm output.avi audio.mp3 divx2pass.log*
 done
