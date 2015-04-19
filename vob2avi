@@ -2,10 +2,10 @@
 
 ################################################################################
 # vob2avi - convert all VOB files in directory to AVI                          #
-# v0.1.6                                                                       #
+# v0.1.7                                                                       #
 # David RC Dayton <2014>                                                       #
 ################################################################################
-#                NOTE: requires mplayer/mencoder/ffmpeg/normalize-audio/mpg321 #
+#                                              NOTE: requires mplayer/mencoder #
 ################################################################################
 
 WIDTH="720"
@@ -37,18 +37,9 @@ do
         pass=${PASS}:bitrate=${VBITRATE}:autoaspect:chroma_opt:vhq=4:bvhq=1:quant_type=mpeg \
         -vf pp=lb,crop=${CROP},scale=${WIDTH}:${HEIGHT},harddup -nosub \
         -oac mp3lame -lameopts br=${ABITRATE}:cbr:aq=0:padding=2 \
-        -aid 128 -af resample=${SAMPLE}:0:2 -srate ${SAMPLE} \
-        -ofps ${FPS} -sws 9 -o output.avi "$@"
+        -aid 128 -af volnorm,resample=${SAMPLE}:0:2 -srate ${SAMPLE} \
+        -ofps ${FPS} -sws 9 -o ${OUTPUT} "$@"
     done
 
-    mplayer output.avi -dumpaudio
-    mv stream.dump audio.mp3
-    mplayer output.avi -dumpvideo
-    mv stream.dump video.xvid
-
-    normalize-mp3 audio.mp3
-
-    ffmpeg -i audio.mp3 -i video.xvid -codec copy ${OUTPUT}
-
-    rm output.avi audio.mp3 video.xvid divx2pass.log
+    rm divx2pass.log*
 done
