@@ -16,6 +16,7 @@ FPS="24000/1001"
 SAMPLE="44100"
 SS="60"
 ENDPOS="1800"
+ASPECT="16/9"
 
 for FILE in *.vob
 do
@@ -32,22 +33,19 @@ do
         | tail -1)
       
     echo Encoding ${INPUT} to ${OUTPUT}:
-    for PASS in 1 2
-    do
-        mencoder ${INPUT} -ovc x264 -x264encopts \
-        pass=${PASS}:bitrate=${VBITRATE}:subq=6:partitions=all:8x8dct:me=umh:frameref=5:bframes=3:b_pyramid=normal:weight_b \
-        -vf pp=lb,crop=${CROP},scale=${WIDTH}:${HEIGHT},harddup -nosub \
-        -oac faac -faacopts br=${ABITRATE}:object=2:tns \
-        -aid 128 -af volnorm,resample=${SAMPLE}:0:2 -srate ${SAMPLE} \
-        -ofps ${FPS} -sws 9 -o ${OUTPUT} "$@"
-    done
+    mencoder ${INPUT} -ovc x264 -x264encopts \
+    bitrate=${VBITRATE}:subq=6:partitions=all:8x8dct:me=umh:frameref=5:bframes=3:b_pyramid=normal:weight_b \
+    -vf pp=lb,crop=${CROP},scale=${WIDTH}:${HEIGHT},harddup -nosub \
+    -oac faac -faacopts br=${ABITRATE}:object=2:tns \
+    -aid 128 -af volnorm,resample=${SAMPLE}:0:2 -srate ${SAMPLE} \
+    -ofps ${FPS} -sws 9 -aspect ${ASPECT} -o ${OUTPUT} "$@"
 
     MP4Box -aviraw video ${OUTPUT}
     MP4Box -aviraw audio ${OUTPUT}
     mv ${BASE}_audio.raw ${BASE}_audio.aac
     MP4Box -add ${BASE}_video.h264 -add ${BASE}_audio.aac -isma ${BOXED}
       
-    rm divx2pass.log*
     rm ${OUTPUT}
     rm ${BASE}_video.h264 ${BASE}_audio.aac
 done
+
