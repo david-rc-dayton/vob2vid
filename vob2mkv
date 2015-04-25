@@ -2,7 +2,7 @@
 
 ################################################################################
 # vob2avi - convert all VOB files in directory to MKV                          #
-# v0.1.7                                                                       #
+# v0.1.8                                                                       #
 # David RC Dayton <2014>                                                       #
 ################################################################################
 #            NOTE: requires mplayer/mencoder/mkvtoolnix/normalize-audio/mpg321 #
@@ -16,6 +16,7 @@ FPS="24000/1001"
 SAMPLE="44100"
 SS="60"
 ENDPOS="1800"
+ASPECT="16/9"
 
 for FILE in *.vob
 do
@@ -38,7 +39,7 @@ do
         -vf pp=lb,crop=${CROP},scale=${WIDTH}:${HEIGHT},harddup -nosub \
         -oac mp3lame -lameopts br=${ABITRATE}:cbr:aq=0:padding=2 \
         -aid 128 -af resample=${SAMPLE}:0:2 -srate ${SAMPLE} \
-        -ofps ${FPS} -sws 9 -o output.avi "$@"
+        -ofps ${FPS} -sws 9 -aspect ${ASPECT} -o output.avi "$@"
     done
 
     mplayer output.avi -dumpaudio
