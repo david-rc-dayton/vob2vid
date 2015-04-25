@@ -5,7 +5,7 @@
 # v0.1.8                                                                       #
 # David RC Dayton <2014>                                                       #
 ################################################################################
-#            NOTE: requires mplayer/mencoder/mkvtoolnix/normalize-audio/mpg321 #
+#                                   NOTE: requires mplayer/mencoder/mkvtoolnix #
 ################################################################################
 
 WIDTH="720"
@@ -15,7 +15,7 @@ ABITRATE="128"
 FPS="24000/1001"
 SAMPLE="44100"
 SS="60"
-ENDPOS="1800"
+ENDPOS="180"
 ASPECT="16/9"
 
 for FILE in *.vob
@@ -38,16 +38,11 @@ do
         pass=${PASS}:bitrate=${VBITRATE}:subq=6:partitions=all:8x8dct:me=umh:frameref=5:bframes=3:b_pyramid=normal:weight_b \
         -vf pp=lb,crop=${CROP},scale=${WIDTH}:${HEIGHT},harddup -nosub \
         -oac mp3lame -lameopts br=${ABITRATE}:cbr:aq=0:padding=2 \
-        -aid 128 -af resample=${SAMPLE}:0:2 -srate ${SAMPLE} \
+        -aid 128 -af volnorm,resample=${SAMPLE}:0:2 -srate ${SAMPLE} \
         -ofps ${FPS} -sws 9 -aspect ${ASPECT} -o output.avi "$@"
     done
 
-    mplayer output.avi -dumpaudio
-    mv stream.dump audio.mp3
+    mkvmerge -o ${OUTPUT} output.avi
 
-    normalize-mp3 audio.mp3
-    
-    mkvmerge -o ${OUTPUT} -A output.avi audio.mp3
-
-    rm output.avi audio.mp3 divx2pass.log*
+    rm output.avi divx2pass.log*
 done
