@@ -14,7 +14,7 @@ Usage:
 
         "./vob2mp4" or "./vob2avi"
 
-    ***VOB file names cannot contain speces***
+    ***VOB file names cannot contain spaces***
 
     Settings can be overridden by appending valid mencoder flags, for example,
     to add subtitle track 3 to the encoded file:
